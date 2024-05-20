@@ -35,6 +35,6 @@ public class SalesController {
 
     private String getCurrentCustomerId(){
 
-        return "Emil";
+        return "Wojtek";
     }
 }
