@@ -8,6 +8,23 @@ getCurrentOffer = () => {
         .then(response => response.json());
 }
 
+const addProductToCart = (productId) => {
+    return fetch(`/api/add-to-cart/$(productId)`, {
+        method: 'POST'
+        });
+}
+
+const acceptOffer = (acceptOfferRequest) => {
+    return fetch("/api/acceptOffer", {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(acceptOfferRequest)
+        })
+            .then(response => response.json());
+}
+
 createProductHtmlEl = (productData) => {
     const template = `
         <div>
@@ -23,11 +40,47 @@ createProductHtmlEl = (productData) => {
     return newEl;
 }
 
+const initializeCartHandler = (productHtmlEl) => {
+    const addToCartBtn = productHtmlEl.querySelector("button[data-id");
+    addToCartBtn.addEventListener("click", (event) => {
+        const productId = event.target.getAttribute("data-id");
+        addProductToCart(productId)
+            .then(refreshCurrentOffer());
+        });
+
+        return productHtmlEl;
+}
+
+const refreshCurrentOffer = () => {
+    const totalEl = document.querySelector('#offer__total');
+    const itemCountlEl = document.querySelector('#offer__items-count');
+
+    getCurrentOffer()
+        .then(offer => {
+            totalEl.textContent = `${offer.total} PLN`
+            itemCountEl.textContent = `${offer.itemsCount} 🛒`;
+        })
+}
+
+const checkoutFormEl = document.querySelector('#checkout');
+checkoutFormEl.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const acceptOfferRequest = {
+        firstName: checkoutFormEl.querSelector('input[name="first_name"]').value,
+        lastName: checkoutFormEl.querSelector('input[name="last_name"]').value,
+        email: checkoutFormEl.querSelector('input[email"]').value,
+        }
+        acceptOffer(acceptOfferRequest)
+            then(reservationDetails => window.location.href = resDetails.paymentUrl);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log("it works");
     const productsList = document.querySelector("#productsList");
     getProducts()
-        .then(products => products.map(createProductHtmlEl))
+        .then(productsAsJson => productsAsJson.map(createProductHtmlEl))
+        .then(productsHtmls => productsHtmls.map(initializeCartHandler))
         .then(productsHtmls => {
             productsHtmls.forEach(htmlEl => productsList.appendChild(htmlEl))
         });
